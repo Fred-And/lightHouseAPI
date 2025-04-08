@@ -1,5 +1,6 @@
 # Build stage
 FROM node:20-alpine AS builder
+RUN apk add --no-cache openssl1.1-compat
 
 WORKDIR /usr/src/app
 
@@ -21,6 +22,7 @@ RUN npm run build
 
 # Production stage
 FROM node:20-alpine
+RUN apk add --no-cache openssl1.1-compat
 
 WORKDIR /usr/src/app
 
