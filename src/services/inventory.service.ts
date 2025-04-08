@@ -17,7 +17,7 @@ export class InventoryService {
 
   async findById(id: string) {
     return this.prisma.inventory.findUnique({
-      where: { id },
+      where: { id: Number(id) },
       include: {
         product: true,
       },
@@ -35,7 +35,7 @@ export class InventoryService {
 
   async update(id: string, data: any) {
     return this.prisma.inventory.update({
-      where: { id },
+      where: { id: Number(id) },
       data,
       include: {
         product: true,
@@ -46,7 +46,7 @@ export class InventoryService {
   async delete(id: string) {
     try {
       await this.prisma.inventory.delete({
-        where: { id },
+        where: { id: Number(id) },
       });
       return true;
     } catch (error) {

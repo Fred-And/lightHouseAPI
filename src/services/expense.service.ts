@@ -42,7 +42,7 @@ export class ExpenseService {
 
   async findById(id: string) {
     return this.prisma.expense.findUnique({
-      where: { id },
+      where: { id: Number(id) },
       include: {
         order: true,
       },
@@ -60,7 +60,7 @@ export class ExpenseService {
 
   async update(id: string, data: any) {
     return this.prisma.expense.update({
-      where: { id },
+      where: { id: Number(id) },
       data,
       include: {
         order: true,
@@ -71,7 +71,7 @@ export class ExpenseService {
   async delete(id: string) {
     try {
       await this.prisma.expense.delete({
-        where: { id },
+        where: { id: Number(id) },
       });
       return true;
     } catch (error) {
