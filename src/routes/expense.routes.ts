@@ -1,8 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { ExpenseService } from "../services/expense.service";
+import { authenticate } from "../middleware/auth.middleware";
 
 export async function expenseRoutes(fastify: FastifyInstance) {
   const expenseService = new ExpenseService();
+  fastify.addHook("onRequest", authenticate);
 
   fastify.get("/", async (request, reply) => {
     try {

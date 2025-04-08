@@ -1,8 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { ProviderService } from "../services/provider.service";
+import { authenticate } from "../middleware/auth.middleware";
 
 export async function providerRoutes(fastify: FastifyInstance) {
   const providerService = new ProviderService();
+  fastify.addHook("onRequest", authenticate);
 
   fastify.get("/", async (request, reply) => {
     try {

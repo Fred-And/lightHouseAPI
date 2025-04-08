@@ -1,9 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { CategoryService } from "../services/category.service";
+import { authenticate } from "../middleware/auth.middleware";
 
 export async function categoryRoutes(fastify: FastifyInstance) {
   const categoryService = new CategoryService();
-
+  fastify.addHook("onRequest", authenticate);
   fastify.get("/", async (request, reply) => {
     try {
       const categories = await categoryService.findAll();

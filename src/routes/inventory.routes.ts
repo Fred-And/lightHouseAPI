@@ -1,9 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { InventoryService } from "../services/inventory.service";
+import { authenticate } from "../middleware/auth.middleware";
 
 export async function inventoryRoutes(fastify: FastifyInstance) {
   const inventoryService = new InventoryService();
-
+  fastify.addHook("onRequest", authenticate);
   fastify.get("/", async (request, reply) => {
     try {
       const inventory = await inventoryService.findAll();

@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { OrderService } from "../services/order.service";
+import { authenticate } from "../middleware/auth.middleware";
 
 const orderItemSchema = {
   type: "object",
@@ -43,6 +44,7 @@ const createOrderSchema = {
 
 export async function orderRoutes(fastify: FastifyInstance) {
   const orderService = new OrderService();
+  fastify.addHook("onRequest", authenticate);
 
   fastify.get("/", async (request, reply) => {
     try {

@@ -1,8 +1,12 @@
 import { FastifyInstance } from "fastify";
 import { CustomerService } from "../services/customer.service";
+import { authenticate } from "../middleware/auth.middleware";
 
 export async function customerRoutes(fastify: FastifyInstance) {
   const customerService = new CustomerService();
+
+  // Apply authentication middleware to all routes
+  fastify.addHook("onRequest", authenticate);
 
   fastify.get("/", async (request, reply) => {
     try {
