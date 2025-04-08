@@ -1,6 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
-RUN apk add --no-cache openssl1.1-compat
+FROM node:20-bullseye-slim AS builder
 
 WORKDIR /usr/src/app
 
@@ -21,8 +20,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
-RUN apk add --no-cache openssl1.1-compat
+FROM node:20-bullseye-slim
 
 WORKDIR /usr/src/app
 
