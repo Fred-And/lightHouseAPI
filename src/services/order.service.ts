@@ -13,36 +13,73 @@ export class OrderService {
   }
 
   async findAll() {
-    return this.prisma.order.findMany({
+    const orders = await this.prisma.order.findMany({
       include: {
         customer: true,
-        orderItems: true,
+        orderItems: {
+          include: {
+            product: true,
+            print: true,
+          },
+        },
         expenses: true,
       },
     });
+
+    return orders.map((order) => ({
+      ...order,
+      totalCost: order.totalCost ? Number(order.totalCost.toFixed(2)) : null,
+      finalCustomerPrice: order.finalCustomerPrice
+        ? Number(order.finalCustomerPrice.toFixed(2))
+        : null,
+      orderItems: order.orderItems.map((item) => ({
+        ...item,
+        unitPrice: Number(item.unitPrice.toFixed(2)),
+        total: Number(item.total.toFixed(2)),
+      })),
+    }));
   }
 
   async findById(id: number) {
-    return this.prisma.order.findUnique({
+    const order = await this.prisma.order.findUnique({
       where: { id },
       include: {
         customer: true,
-        orderItems: true,
+        orderItems: {
+          include: {
+            product: true,
+            print: true,
+          },
+        },
         expenses: true,
       },
     });
+
+    if (!order) return null;
+
+    return {
+      ...order,
+      totalCost: order.totalCost ? Number(order.totalCost.toFixed(2)) : null,
+      finalCustomerPrice: order.finalCustomerPrice
+        ? Number(order.finalCustomerPrice.toFixed(2))
+        : null,
+      orderItems: order.orderItems.map((item) => ({
+        ...item,
+        unitPrice: Number(item.unitPrice.toFixed(2)),
+        total: Number(item.total.toFixed(2)),
+      })),
+    };
   }
 
   async create(data: any) {
     try {
       const { items, ...orderData } = data;
 
-      // Map items to the format expected by helper functions
       const mappedItems = items.map((item: any) => ({
         productPrice: Number(item.productUnitPrice),
         printPrice: Number(item.printUnitPrice || 0),
         quantity: Number(item.quantity),
-        serviceFee: 1.4, // Default markup, you might want to make this configurable
+        serviceFee: 1.4,
       }));
 
       const totalCost = calculateProductRawTotalArray(mappedItems);
@@ -55,6 +92,7 @@ export class OrderService {
       return this.prisma.order.create({
         data: {
           ...orderData,
+          totalCost: new Prisma.Decimal(totalCost),
           finalCustomerPrice: new Prisma.Decimal(finalCustomerPrice),
           orderItems: {
             create: items.map((item: any) => {
@@ -114,12 +152,40 @@ export class OrderService {
 
   async delete(id: number) {
     try {
-      await this.prisma.order.delete({
+      const order = await this.prisma.order.findUnique({
         where: { id },
+        include: {
+          orderItems: true,
+          expenses: true,
+        },
       });
+
+      if (!order) {
+        return false;
+      }
+
+      await this.prisma.$transaction(async (tx) => {
+        if (order.orderItems.length > 0) {
+          await tx.orderItem.deleteMany({
+            where: { orderId: id },
+          });
+        }
+
+        if (order.expenses.length > 0) {
+          await tx.expense.deleteMany({
+            where: { orderId: id },
+          });
+        }
+
+        await tx.order.delete({
+          where: { id },
+        });
+      });
+
       return true;
     } catch (error) {
-      return false;
+      console.error("Order deletion error:", error);
+      throw error;
     }
   }
 }
