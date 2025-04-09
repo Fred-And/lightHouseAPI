@@ -23,7 +23,11 @@ fastify.register(cookie, {
 });
 
 fastify.register(cors, {
-  origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+  origin: [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://manager.lhbranded.com",
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
@@ -56,7 +60,7 @@ fastify.register(expenseRoutes, { prefix: "/api/expenses" });
 
 const start = async () => {
   try {
-    await fastify.listen({ port: 3001 });
+    await fastify.listen({ port: 3001, host: "0.0.0.0" });
     console.log("Server is running on port 3001");
   } catch (err) {
     fastify.log.error(err);
