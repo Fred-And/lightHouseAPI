@@ -3,6 +3,42 @@ export const calculateIva = (value: number): number => {
   return value * (1 + ivaRate);
 };
 
+/**
+ * Calculate the final price of a product based on its component costs and margin
+ * @param baseCost - The base cost of the product (e.g. from supplier)
+ * @param printCost - Optional cost for printing
+ * @param packagingCost - Optional cost for packaging
+ * @param shippingCost - Optional cost for shipping
+ * @param laborCost - Optional cost for labor
+ * @param marginPercentage - Optional margin percentage (default: 30%)
+ * @returns The final price of the product
+ */
+export const calculateProductFinalPrice = ({
+  baseCost,
+  printCost = 0,
+  packagingCost = 0,
+  shippingCost = 0,
+  laborCost = 0,
+  marginPercentage = 30,
+}: {
+  baseCost: number;
+  printCost?: number;
+  packagingCost?: number;
+  shippingCost?: number;
+  laborCost?: number;
+  marginPercentage?: number;
+}): number => {
+  // Calculate the total cost
+  const totalCost =
+    baseCost + printCost + packagingCost + shippingCost + laborCost;
+
+  // Apply the margin
+  const finalPrice = totalCost * (1 + marginPercentage / 100);
+
+  // Return the final price rounded to 2 decimal places
+  return Number(finalPrice.toFixed(2));
+};
+
 export const calculateProductRawTotal = (
   productPrice: number,
   printPrice: number,

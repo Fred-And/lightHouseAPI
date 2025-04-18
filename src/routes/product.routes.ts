@@ -1,10 +1,16 @@
 import { FastifyInstance } from "fastify";
 import { ProductService } from "../services/product.service";
 import { authenticate } from "../middleware/auth.middleware";
+import {
+  createProductSchema,
+  updateProductSchema,
+} from "../schemas/product.schema";
+import { ProductCreateData } from "../types/product.types";
 
 export async function productRoutes(fastify: FastifyInstance) {
   const productService = new ProductService();
   fastify.addHook("onRequest", authenticate);
+
   fastify.get("/", async (request, reply) => {
     try {
       const products = await productService.findAll();
@@ -27,26 +33,30 @@ export async function productRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.post("/", async (request, reply) => {
+  fastify.post("/", createProductSchema, async (request, reply) => {
     try {
-      const product = await productService.create(request.body);
-      return product;
+      const productData = request.body as ProductCreateData;
+      const product = await productService.create(productData);
+      return reply.status(201).send(product);
     } catch (error) {
+      console.error("Product creation error:", error);
       reply.status(500).send({
         error: "Failed to create product: " + (error as Error).message,
       });
     }
   });
 
-  fastify.put("/:id", async (request, reply) => {
+  fastify.put("/:id", updateProductSchema, async (request, reply) => {
     try {
       const { id } = request.params as { id: number };
-      const product = await productService.update(id, request.body);
+      const productData = request.body as ProductCreateData;
+      const product = await productService.update(id, productData);
       if (!product) {
         return reply.status(404).send({ error: "Product not found" });
       }
       return product;
     } catch (error) {
+      console.error("Product update error:", error);
       reply.status(500).send({
         error: "Failed to update product: " + (error as Error).message,
       });

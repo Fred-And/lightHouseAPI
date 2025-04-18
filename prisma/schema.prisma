@@ -31,21 +31,26 @@ model Customer {
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
-  name        String
-  description String?
-  rawPrice    Decimal
-  totalPrice  Decimal
-  sku         String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  categoryId  Int
-  providerId  Int
-  inventory   Inventory?
-  orderItems  OrderItem[] @relation("ProductOrderItem")
-  printItems  OrderItem[] @relation("PrintOrderItem")
-  category    Category    @relation(fields: [categoryId], references: [id])
-  provider    Provider    @relation(fields: [providerId], references: [id])
+  id               Int         @id @default(autoincrement())
+  name             String
+  description      String?
+  rawPrice         Decimal    // Base cost from supplier
+  totalPrice       Decimal    // Final price with margin
+  printCost        Decimal?   // Optional print cost
+  packagingCost    Decimal?   // Optional packaging cost
+  shippingCost     Decimal?   // Optional shipping cost
+  laborCost        Decimal?   // Optional labor cost
+  marginPercentage Int?       // Optional margin percentage (default 30%)
+  sku              String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  categoryId       Int
+  providerId       Int
+  inventory        Inventory?
+  orderItems       OrderItem[] @relation("ProductOrderItem")
+  printItems       OrderItem[] @relation("PrintOrderItem")
+  category         Category    @relation(fields: [categoryId], references: [id])
+  provider         Provider    @relation(fields: [providerId], references: [id])
 }
 
 model Order {
@@ -100,19 +105,28 @@ model Inventory {
 }
 
 model OrderItem {
-  id        Int      @id @default(autoincrement())
-  quantity  Int
-  unitPrice Decimal
-  total     Decimal
-  confirmed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orderId   Int
-  productId Int
-  printId   Int?
-  order     Order    @relation(fields: [orderId], references: [id])
-  product   Product  @relation("ProductOrderItem", fields: [productId], references: [id])
-  print     Product? @relation("PrintOrderItem", fields: [printId], references: [id])
+  id               Int      @id @default(autoincrement())
+  quantity         Int
+  unitPrice        Decimal  // Base unit price at time of order
+  total            Decimal  // Total price for this item
+
+  // Pricing components snapshot at time of order
+  baseCost         Decimal  // Base cost from supplier
+  printCost        Decimal? // Optional print cost
+  packagingCost    Decimal? // Optional packaging cost
+  shippingCost     Decimal? // Optional shipping cost
+  laborCost        Decimal? // Optional labor cost
+  marginPercentage Int?     // Margin percentage used
+
+  confirmed        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  orderId          Int
+  productId        Int
+  printId          Int?
+  order            Order    @relation(fields: [orderId], references: [id])
+  product          Product  @relation("ProductOrderItem", fields: [productId], references: [id])
+  print            Product? @relation("PrintOrderItem", fields: [printId], references: [id])
 }
 
 model Expense {
