@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { OrderService } from "../services/order.service";
 import { authenticate } from "../middleware/auth.middleware";
+import { OrderCreateData, OrderUpdateData } from "../types/order.types";
 
 const orderItemSchema = {
   type: "object",
@@ -70,7 +71,8 @@ export async function orderRoutes(fastify: FastifyInstance) {
 
   fastify.post("/", createOrderSchema, async (request, reply) => {
     try {
-      const order = await orderService.create(request.body);
+      const orderData = request.body as OrderCreateData;
+      const order = await orderService.create(orderData);
       return order;
     } catch (error) {
       console.error("Order creation error:", error);
@@ -81,7 +83,8 @@ export async function orderRoutes(fastify: FastifyInstance) {
   fastify.put("/:id", async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const order = await orderService.update(Number(id), request.body);
+      const updateData = request.body as OrderUpdateData;
+      const order = await orderService.update(Number(id), updateData);
       if (!order) {
         return reply.status(404).send({ error: "Order not found" });
       }
